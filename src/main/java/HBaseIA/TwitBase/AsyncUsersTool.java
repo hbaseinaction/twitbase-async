@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import com.stumbleupon.async.Callback;
 import com.stumbleupon.async.Deferred;
+import com.stumbleupon.async.DeferredGroupException;
 
 public class AsyncUsersTool {
 
@@ -182,12 +183,11 @@ public class AsyncUsersTool {
     final HBaseClient client = new HBaseClient("localhost");
 
     if ("update".equals(args[0])) {
-      for(Deferred<Boolean> d: doList(client)) {
-        try {
-          d.join();
-        } catch (SendMessageFailedException e) {
-          LOG.info(e.getMessage());
-        }
+      Deferred<ArrayList<Object>> d = Deferred.group(doList(client));
+      try {
+        d.join();
+      } catch (DeferredGroupException e) {
+        LOG.info(e.getCause().getMessage());
       }
     }
 
