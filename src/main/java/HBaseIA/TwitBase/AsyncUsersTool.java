@@ -8,6 +8,8 @@ import org.hbase.async.HBaseClient;
 import org.hbase.async.KeyValue;
 import org.hbase.async.PutRequest;
 import org.hbase.async.Scanner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.stumbleupon.async.Callback;
 import com.stumbleupon.async.Deferred;
@@ -24,14 +26,6 @@ public class AsyncUsersTool {
     "  help - print this message and exit.\n" +
     "  update - update passwords for all installed users.\n";
 
-  static final Object lock = new Object();
-
-  static void println(String msg) {
-    synchronized (lock) {
-      System.out.println(msg);
-    }
-  }
-
   static byte[] mkNewPassword(byte[] seed) {
     UUID u = UUID.randomUUID();
     return u.toString().replace("-", "").toLowerCase().getBytes();
@@ -39,14 +33,14 @@ public class AsyncUsersTool {
 
   static void latency() throws Exception {
     if (System.currentTimeMillis() % 3 == 0) {
-      println("a thread is napping...");
+      LOG.info("a thread is napping...");
       Thread.sleep(1000);
     }
   }
 
   static boolean entropy(Boolean val) {
     if (System.currentTimeMillis() % 5 == 0) {
-      println("entropy strikes!");
+      LOG.info("entropy strikes!");
       return false;
     }
     return (val == null) ? Boolean.TRUE : val;
@@ -140,7 +134,7 @@ public class AsyncUsersTool {
       latency();
       if (entropy(null))
         throw new SendMessageFailedException();
-      println(s);
+      LOG.info(s);
       latency();
       return Boolean.TRUE;
     }
@@ -161,7 +155,7 @@ public class AsyncUsersTool {
     ArrayList<Deferred<Boolean>> workers
       = new ArrayList<Deferred<Boolean>>();
     while ((rows = scanner.nextRows(1).joinUninterruptibly()) != null) {
-      println("received a page of users.");
+      LOG.info("received a page of users.");
       for (ArrayList<KeyValue> row : rows) {
         KeyValue kv = row.get(0);
         byte[] expected = kv.value();
@@ -192,11 +186,13 @@ public class AsyncUsersTool {
         try {
           d.join();
         } catch (SendMessageFailedException e) {
-          println(e.getMessage());
+          LOG.info(e.getMessage());
         }
       }
     }
 
     client.shutdown().joinUninterruptibly();
   }
+
+  static final Logger LOG = LoggerFactory.getLogger(AsyncUsersTool.class);
 }
