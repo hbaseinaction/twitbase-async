@@ -6,7 +6,7 @@
 
   <groupId>HBaseIA</groupId>
   <artifactId>twitbase-async</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
 
   <name>twitbase-async</name>
   <url>http://www.manning.com/dimidukkhurana/</url>
@@ -19,7 +19,7 @@
     <dependency>
       <groupId>org.hbase</groupId>
       <artifactId>asynchbase</artifactId>
-      <version>1.3.1</version>
+      <version>1.3.2</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
